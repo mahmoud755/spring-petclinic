@@ -30,16 +30,16 @@ pipeline {
         stage('Build & Test') {
             steps {
                 sh '''
-		          set -euxo pipefail;
                   chmod +x mvnw;
-                  ./mvnw -e -B clean package;
+                  ./mvnw clean install -DskipTests
+                  ./mvnw -B clean package;
                 '''
             }
-            // post {
-            //     always {
-            //         junit '**/target/surefire-reports/*.xml'
-            //     }
-            // }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
         }
 
         stage('Build Docker Image') {
