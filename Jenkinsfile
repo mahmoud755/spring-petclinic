@@ -30,6 +30,7 @@ pipeline {
         stage('Build & Test') {
             steps {
                 sh '''
+		  set -euxo pipefail
                   chmod +x mvnw
                   ./mvnw -B clean package
                 '''
