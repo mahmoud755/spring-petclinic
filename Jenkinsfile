@@ -32,7 +32,7 @@ pipeline {
                 sh '''
 		          set -euxo pipefail;
                   chmod +x mvnw;
-                  ./mvnw -B clean package;
+                  ./mvnw -e -B clean package;
                 '''
             }
             post {
