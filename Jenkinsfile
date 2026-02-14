@@ -32,7 +32,6 @@ pipeline {
                 sh '''
                   chmod +x mvnw;
                   ./mvnw clean install -DskipTests
-                  ./mvnw -B clean package;
                 '''
             }
             post {
