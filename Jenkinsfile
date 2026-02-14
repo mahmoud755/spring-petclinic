@@ -35,11 +35,11 @@ pipeline {
                   ./mvnw -e -B clean package;
                 '''
             }
-            post {
-                always {
-                    junit '**/target/surefire-reports/*.xml'
-                }
-            }
+            // post {
+            //     always {
+            //         junit '**/target/surefire-reports/*.xml'
+            //     }
+            // }
         }
 
         stage('Build Docker Image') {
