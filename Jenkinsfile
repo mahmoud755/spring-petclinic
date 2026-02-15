@@ -42,17 +42,26 @@ pipeline {
             }
         }
 
-        stage('Smoke Test Container') {
-            steps {
-                sh '''
-                  docker rm -f petclinic-smoke || true
-                  docker run -d --name petclinic-smoke -p 18080:8080 ${IMAGE_NAME}:${BRANCH_NAME}-${BUILD_NUMBER}
-                  sleep 10
-                  curl -f http://localhost:18080/ || (docker logs petclinic-smoke && exit 1)
-                  docker rm -f petclinic-smoke
-                '''
-            }
-        }
+stage('Smoke Test Container') {
+    steps {
+        sh '''
+            docker rm -f petclinic-smoke || true
+
+            docker run -d \
+              --name petclinic-smoke \
+              --network jenkins \
+              ${IMAGE_NAME}:${BRANCH_NAME}-${BUILD_NUMBER}
+
+            echo "Waiting for app..."
+            sleep 15
+
+            curl -f http://petclinic-smoke:8080/ \
+              || (docker logs petclinic-smoke && exit 1)
+
+            docker rm -f petclinic-smoke
+        '''
+    }
+}
 
         stage('Archive Artifact') {
             steps {
