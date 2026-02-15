@@ -19,12 +19,12 @@ pipeline {
             }
         }
 
-        stage('Start Postgres (Compose)') {
-            steps {
-                sh '''
-                  docker compose -p "petclinic-${BUILD_NUMBER}" up -d
-                '''
-            }
+        // stage('Start Postgres (Compose)') {
+        //     steps {
+        //         sh '''
+        //           docker compose -p "petclinic-${BUILD_NUMBER}" up -d
+        //         '''
+        //     }
         }
 
         stage('Build & Test') {
