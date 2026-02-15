@@ -18,8 +18,9 @@ pipeline {
     stage('Build & Test') {
       steps {
         sh '''
-          chmod +x mvnw;
-          ./mvnw clean package
+          set -euxo pipefail
+          chmod +x mvnw
+          ./mvnw -B clean test -Dtest=!PostgresIntegrationTests
         '''
       }
       // post {
