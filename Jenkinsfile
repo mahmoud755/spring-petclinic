@@ -70,7 +70,6 @@ stage('Smoke Test Container') {
         }
     }
 
-    // بما إننا ما بنشغّـلش compose دلوقتي، نسيبها فاضية أو نشيلها
     // post {
     //     always {
     //         sh '''
