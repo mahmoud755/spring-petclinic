@@ -19,20 +19,12 @@ pipeline {
             }
         }
 
-        // stage('Start Postgres (Compose)') {
-        //     steps {
-        //         sh '''
-        //           docker compose -p "petclinic-${BUILD_NUMBER}" up -d
-        //         '''
-        //     }
-        }
-
-        stage('Build & Test') {
+        stage('Build & Test (Skip PostgresIntegrationTests)') {
             steps {
                 sh '''
                   set -euxo pipefail
                   chmod +x mvnw
-                  ./mvnw -B clean test -Dtest=!PostgresIntegrationTests
+                  ./mvnw -B clean package -Dtest=!PostgresIntegrationTests
                 '''
             }
             post {
@@ -69,12 +61,12 @@ pipeline {
         }
     }
 
-    post {
-        always {
-            sh '''
-              docker compose -p "petclinic-${BUILD_NUMBER}" down -v || true
-            '''
-        }
-    }
+    // بما إننا ما بنشغّـلش compose دلوقتي، نسيبها فاضية أو نشيلها
+    // post {
+    //     always {
+    //         sh '''
+    //           docker compose -p "petclinic-${BUILD_NUMBER}" down -v || true
+    //         '''
+    //     }
+    // }
 }
-
