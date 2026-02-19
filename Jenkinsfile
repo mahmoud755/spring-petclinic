@@ -11,6 +11,8 @@ pipeline {
     IMAGE_REPO = "mahmoud377/spring-petclinic"
     SMOKE_NAME = "petclinic-smoke"
     DOCKER_NET = "jenkins"
+    DOCKER_PASS = "dckr_pat_XIJS-s_jAVPP25l9Iq1eFBBAAUM"
+    DOCKER_USER = "mahmoud377"
   }
 
   stages {
