@@ -134,3 +134,39 @@ pipeline {
     }
   }
 }
+
+stage('Deploy to Ubuntu (main only)') {
+  when { branch 'main' }
+  steps {
+    sh '''
+      set -euxo pipefail
+
+      APP_NAME="petclinic-prod"
+      PORT="8085"
+      IMAGE="${IMAGE_REPO}:latest"
+
+      docker pull "$IMAGE"
+
+      docker rm -f "$APP_NAME" || true
+
+      docker run -d \
+        --name "$APP_NAME" \
+        --restart unless-stopped \
+        -p ${PORT}:8080 \
+        "$IMAGE"
+
+      for i in $(seq 1 30); do
+        if curl -fsS "http://localhost:${PORT}/" >/dev/null; then
+          echo "✅ Deploy OK on port ${PORT}"
+          exit 0
+        fi
+        echo "waiting app... ($i)"
+        sleep 2
+      done
+
+      echo "❌ Deploy failed (app not responding on ${PORT})"
+      docker logs "$APP_NAME" || true
+      exit 1
+    '''
+  }
+}
