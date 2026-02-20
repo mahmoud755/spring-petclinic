@@ -8,11 +8,11 @@ pipeline {
   }
 
   environment {
-    IMAGE_REPO = "mahmoud377/spring-petclinic"
-    SMOKE_NAME = "petclinic-smoke"
-    DOCKER_NET = "jenkins"
-    DOCKER_PASS = "dckr_pat_-4GAaFvNqtb9IJuNceehVwCZahs"
-    DOCKER_USER = "mahmoud377"
+    IMAGE_REPO  = "mahmoud377/spring-petclinic"
+    SMOKE_NAME  = "petclinic-smoke"
+    DOCKER_NET  = "jenkins"
+    PROD_NAME   = "petclinic-prod"
+    PROD_PORT   = "8085"
   }
 
   stages {
@@ -69,7 +69,6 @@ pipeline {
             --network ${DOCKER_NET} \
             ${IMAGE_REPO}:${IMAGE_TAG}
 
-          # wait a bit for app startup (later we can replace with healthcheck loop)
           sleep 15
 
           curl -f http://${SMOKE_NAME}:8080/ || (docker logs ${SMOKE_NAME} && exit 1)
@@ -83,8 +82,8 @@ pipeline {
       steps {
         withCredentials([usernamePassword(
           credentialsId: 'dockerhub-creds',
-          usernameVariable: 'mahmoud377',
-          passwordVariable: 'dckr_pat_XIJS-s_jAVPP25l9Iq1eFBBAAUM'
+          usernameVariable: 'DOCKER_USER',
+          passwordVariable: 'DOCKER_PASS'
         )]) {
           sh '''
             set -euxo pipefail
@@ -104,8 +103,8 @@ pipeline {
       steps {
         withCredentials([usernamePassword(
           credentialsId: 'dockerhub-creds',
-          usernameVariable: 'mahmoud377',
-          passwordVariable: 'dckr_pat_XIJS-s_jAVPP25l9Iq1eFBBAAUM'
+          usernameVariable: 'DOCKER_USER',
+          passwordVariable: 'DOCKER_PASS'
         )]) {
           sh '''
             set -euxo pipefail
@@ -116,6 +115,40 @@ pipeline {
             docker logout
           '''
         }
+      }
+    }
+
+    stage('Deploy to Ubuntu (main only)') {
+      when { branch 'main' }
+      steps {
+        sh '''
+          set -euxo pipefail
+
+          IMAGE="${IMAGE_REPO}:latest"
+
+          docker pull "$IMAGE"
+
+          docker rm -f ${PROD_NAME} || true
+
+          docker run -d \
+            --name ${PROD_NAME} \
+            --restart unless-stopped \
+            -p ${PROD_PORT}:8080 \
+            "$IMAGE"
+
+          for i in $(seq 1 30); do
+            if curl -fsS "http://localhost:${PROD_PORT}/" >/dev/null; then
+              echo "✅ Deploy OK on port ${PROD_PORT}"
+              exit 0
+            fi
+            echo "waiting app... ($i)"
+            sleep 2
+          done
+
+          echo "❌ Deploy failed (app not responding on ${PROD_PORT})"
+          docker logs ${PROD_NAME} || true
+          exit 1
+        '''
       }
     }
 
@@ -132,41 +165,5 @@ pipeline {
         docker rm -f ${SMOKE_NAME} || true
       '''
     }
-  }
-}
-
-stage('Deploy to Ubuntu (main only)') {
-  // when { branch 'main' }
-  steps {
-    sh '''
-      set -euxo pipefail
-
-      APP_NAME="petclinic-prod"
-      PORT="8085"
-      IMAGE="${IMAGE_REPO}:latest"
-
-      docker pull "$IMAGE"
-
-      docker rm -f "$APP_NAME" || true
-
-      docker run -d \
-        --name "$APP_NAME" \
-        --restart unless-stopped \
-        -p ${PORT}:8080 \
-        "$IMAGE"
-
-      for i in $(seq 1 30); do
-        if curl -fsS "http://localhost:${PORT}/" >/dev/null; then
-          echo "✅ Deploy OK on port ${PORT}"
-          exit 0
-        fi
-        echo "waiting app... ($i)"
-        sleep 2
-      done
-
-      echo "❌ Deploy failed (app not responding on ${PORT})"
-      docker logs "$APP_NAME" || true
-      exit 1
-    '''
   }
 }
