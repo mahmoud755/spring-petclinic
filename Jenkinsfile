@@ -8,11 +8,12 @@ pipeline {
   }
 
   environment {
-    IMAGE_REPO  = "mahmoud377/spring-petclinic"
-    SMOKE_NAME  = "petclinic-smoke"
-    DOCKER_NET  = "jenkins"
-    PROD_NAME   = "petclinic-prod"
-    PROD_PORT   = "8085"
+    IMAGE_REPO = "mahmoud377/spring-petclinic"
+    SMOKE_NAME = "petclinic-smoke"
+    DOCKER_NET = "jenkins"
+
+    PROD_NAME = "petclinic-prod"
+    PROD_PORT = "8085"
   }
 
   stages {
@@ -61,7 +62,6 @@ pipeline {
       steps {
         sh '''
           set -euxo pipefail
-
           docker rm -f ${SMOKE_NAME} || true
 
           docker run -d \
@@ -70,7 +70,6 @@ pipeline {
             ${IMAGE_REPO}:${IMAGE_TAG}
 
           sleep 15
-
           curl -f http://${SMOKE_NAME}:8080/ || (docker logs ${SMOKE_NAME} && exit 1)
 
           docker rm -f ${SMOKE_NAME}
@@ -127,7 +126,6 @@ pipeline {
           IMAGE="${IMAGE_REPO}:latest"
 
           docker pull "$IMAGE"
-
           docker rm -f ${PROD_NAME} || true
 
           docker run -d \
@@ -161,9 +159,7 @@ pipeline {
 
   post {
     always {
-      sh '''
-        docker rm -f ${SMOKE_NAME} || true
-      '''
+      sh 'docker rm -f ${SMOKE_NAME} || true'
     }
   }
 }
