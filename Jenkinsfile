@@ -136,7 +136,7 @@ pipeline {
 }
 
 stage('Deploy to Ubuntu (main only)') {
-  when { branch 'main' }
+  // when { branch 'main' }
   steps {
     sh '''
       set -euxo pipefail
