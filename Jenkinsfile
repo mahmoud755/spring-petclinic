@@ -135,7 +135,7 @@ pipeline {
             "$IMAGE"
 
           for i in $(seq 1 30); do
-            if curl -fsS "http://localhost:${PROD_PORT}/" >/dev/null; then
+            if docker exec petclinic-prod curl -fsS "http://localhost:8080/" >/dev/null; then
               echo "✅ Deploy OK on port ${PROD_PORT}"
               exit 0
             fi
